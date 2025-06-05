@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact name="DeskPet:jar2">
+    <output-path>$PROJECT_DIR$/out/artifacts/DeskPet_jar2</output-path>
+    <root id="root">
+      <element id="archive" name="DeskPet.jar">
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/src/META-INF/MANIFEST.MF" />
+        </element>
+        <element id="module-output" name="DeskPet" />
+      </element>
+    </root>
+  </artifact>
+</component>

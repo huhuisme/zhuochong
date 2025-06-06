@@ -60,7 +60,7 @@ jobs:
 
       # 8) 上传 .dmg 作为 artifact，便于下载
       - name: Upload DMG artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: DeskPet-macos-dmg
           path: output/DeskPet.dmg

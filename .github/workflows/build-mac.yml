@@ -17,7 +17,7 @@ jobs:
     - name: Generate ICNS icon
       run: |
         mkdir -p target
-        mkdir icon.iconset
+        mkdir -p icon.iconset
         sips -z 16 16     src/main/resources/images/icon.png --out icon.iconset/icon_16x16.png
         sips -z 32 32     src/main/resources/images/icon.png --out icon.iconset/icon_16x16@2x.png
         sips -z 32 32     src/main/resources/images/icon.png --out icon.iconset/icon_32x32.png

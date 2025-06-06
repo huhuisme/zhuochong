@@ -55,18 +55,22 @@ jobs:
               --compress=2 \
               --output target/runtime
               
-    - name: Package DMG
+     - name: Package DMG
       run: |
-        jpackage --name DeskPet \
-                 --input target/ \
-                 --main-jar DeskPet-1.0-SNAPSHOT.jar \
-                 --main-class com.hhhu.DesktopPet \
-                 --runtime-image target/custom-jre \
-                 --icon target/deskpet.icns \
-                 --type dmg \
-                 --dest release \
-                 --app-version "1.0.0" \
-                 --mac-package-identifier "com.hhhu.DeskPet"
+        jpackage \
+          --name DeskPet \
+          --input target \
+          --main-jar DeskPet-*.jar \
+          --main-class com.hhhu.DesktopPet \
+          --runtime-image target/runtime \
+          --icon target/deskpet.icns \
+          --type dmg \
+          --dest release \
+          --app-version "1.0.0" \
+          --mac-package-identifier "com.hhhu.DeskPet" \
+          --mac-sign \
+          --mac-signing-key-user-name "Developer ID"
+
                  
     - name: Upload artifact
       uses: actions/upload-artifact@v4

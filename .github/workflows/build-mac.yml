@@ -33,7 +33,7 @@ jobs:
             --input target \
             --main-jar DeskPet-1.0-SNAPSHOT-jar-with-dependencies.jar \
             --main-class com.hhhu.DesktopPet \
-            --icon src/main/resources/icons.icns \  # 确保图标路径存在
+            --icon src/main/resources/images/icons.icns \  # 确保图标路径存在
             --dest release \
           --verbose
 

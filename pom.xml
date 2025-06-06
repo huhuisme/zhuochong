@@ -22,7 +22,6 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <!-- 替换为你的主类 -->
                             <mainClass>com.hhhu.DesktopPet</mainClass>
                         </manifest>
                     </archive>

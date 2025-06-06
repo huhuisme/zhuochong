@@ -1,65 +1,58 @@
-name: Build macOS DMG with JDK 21
+name: Build DMG for macOS
 
-on: [push, pull_request]
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: macos-latest
+
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21.0.2'
 
-    - name: Generate ICNS icon
-      run: |
-        mkdir -p target
-        mkdir -p icon.iconset
-        sips -z 16 16     src/main/resources/images/icon.png --out icon.iconset/icon_16x16.png
-        sips -z 32 32     src/main/resources/images/icon.png --out icon.iconset/icon_16x16@2x.png
-        sips -z 32 32     src/main/resources/images/icon.png --out icon.iconset/icon_32x32.png
-        sips -z 64 64     src/main/resources/images/icon.png --out icon.iconset/icon_32x32@2x.png
-        sips -z 128 128   src/main/resources/images/icon.png --out icon.iconset/icon_128x128.png
-        sips -z 256 256   src/main/resources/images/icon.png --out icon.iconset/icon_128x128@2x.png
-        sips -z 256 256   src/main/resources/images/icon.png --out icon.iconset/icon_256x256.png
-        sips -z 512 512   src/main/resources/images/icon.png --out icon.iconset/icon_256x256@2x.png
-        sips -z 512 512   src/main/resources/images/icon.png --out icon.iconset/icon_512x512.png
-        sips -z 1024 1024 src/main/resources/images/icon.png --out icon.iconset/icon_512x512@2x.png
-        
-        iconutil -c icns icon.iconset -o target/deskpet.icns
-        rm -rf icon.iconset
+      - name: Build with Maven
+        run: mvn clean package
 
-    - name: Build with Maven
-      run: mvn clean package
+      - name: Package with jpackage
+        run: |
+          mkdir -p build/package
+          jpackage \
+            --type app-image \
+            --name DesktopPet \
+            --input target \
+            --main-jar DeskPet-1.0-SNAPSHOT-jar-with-dependencies.jar \
+            --main-class com.hhhu.DesktopPet \
+            --icon src/main/resources/images/icon.png \
+            --java-options "-Xmx512m" \
+            --dest build/package \
+            --resource-dir src/main/resources
 
-    - name: Create modular runtime (JDK 21+)
-      run: |
-        jdeps --ignore-missing-deps --multi-release 21 --print-module-deps target/DeskPet-*.jar > target/modules.txt
-        jlink --add-modules $(cat target/modules.txt),jdk.unsupported \
-              --strip-debug \
-              --compress=2 \
-              --output target/runtime
+      - name: Create DMG
+        run: |
+          brew install create-dmg
+          create-dmg \
+            --volname "DesktopPet" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --icon "DesktopPet.app" 175 190 \
+            --hide-extension "DesktopPet.app" \
+            --app-drop-link 425 190 \
+            "DesktopPet.dmg" \
+            build/package/DesktopPet.app
 
-    - name: Package DMG
-      run: |
-        jpackage \
-          --name DeskPet \
-          --input target \
-          --main-jar DeskPet-*.jar \
-          --main-class com.hhhu.DesktopPet \
-          --runtime-image target/runtime \
-          --icon target/deskpet.icns \
-          --type dmg \
-          --dest release \
-          --app-version "1.0.0" \
-          --mac-package-identifier "com.hhhu.DeskPet" \
-          --mac-sign \
-          --mac-signing-key-user-name "Developer ID" 
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: DeskPet-Mac
-        path: release/*.dmg
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: DesktopPet-DMG
+          path: DesktopPet.dmg

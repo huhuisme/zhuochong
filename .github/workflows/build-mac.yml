@@ -25,17 +25,18 @@ jobs:
 
 
     - name: Create DMG package
-      run: |
-        mkdir -p release
-        jpackage \
-            --name DeskPet \
-            --type dmg \
-            --input target \
-            --main-jar DeskPet-1.0-SNAPSHOT-jar-with-dependencies.jar \
-            --main-class com.hhhu.DesktopPet \
-            --icon src/main/resources/images/icons.icns \  # 确保图标路径存在
-            --dest release \
-          --verbose
+       run: |
+            mkdir -p release
+             jpackage \
+                --name DeskPet \
+                --type dmg \
+                --input target \
+                --main-jar DeskPet-1.0-SNAPSHOT-jar-with-dependencies.jar \
+                --main-class com.hhhu.DesktopPet \
+                --icon src/main/resources/images/icons.icns \
+                --dest release \
+                --verbose
+
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4

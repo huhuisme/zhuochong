@@ -51,8 +51,9 @@ jobs:
             "DesktopPet.dmg" \
             build/package/DesktopPet.app
 
-      - name: Upload DMG artifact
-        uses: actions/upload-artifact@v3
+     - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: DesktopPet-DMG
-          path: DesktopPet.dmg
+            name: DesktopPet-DMG
+            path: DesktopPet.dmg
+    

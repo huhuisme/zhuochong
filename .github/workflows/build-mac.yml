@@ -1,13 +1,19 @@
-name: Build macOS DMG with JDK 21
+name: Build macOS DMG
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: macos-latest
+    
     steps:
-    - uses: actions/checkout@v4
-
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
     - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
@@ -20,14 +26,18 @@ jobs:
         mvn clean package
         
         
-    - name: Create modular runtime (JDK 21+)
+    - name: Create custom JRE
       run: |
-        # JDK 21+ 推荐使用模块化构建
-        jdeps --ignore-missing-deps --multi-release 21 --print-module-deps target/DeskPet-*.jar > target/modules.txt
-        jlink --add-modules $(cat target/modules.txt),jdk.unsupported \
+        # 分析依赖模块
+        modules=$(jdeps --ignore-missing-deps --print-module-deps -q target/DeskPet-1.0-SNAPSHOT.jar)
+        
+        # 创建精简JRE
+        jlink --add-modules $modules,java.desktop \
               --strip-debug \
+              --no-header-files \
+              --no-man-pages \
               --compress=2 \
-              --output target/runtime
+              --output target/custom-jre
               
      - name: Package DMG
       run: |

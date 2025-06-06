@@ -278,6 +278,9 @@ public class PetFrame extends JFrame {
 
     private void setupSystemTray() {
         if (!SystemTray.isSupported()) return;
+        if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+            System.setProperty("apple.awt.UIElement", "true");
+        }
 
         SystemTray tray = SystemTray.getSystemTray();
         Image image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/images/icon.png"));

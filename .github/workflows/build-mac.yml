@@ -1,66 +1,53 @@
-name: Build macOS DMG (Java 21)
+name: Build macOS DMG
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  build-dmg:
+  build:
     runs-on: macos-latest
 
     steps:
-      # 1) 签出代码
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      # 2) 安装 Temurin 21 JDK（含 jpackage 工具）
-      - name: Setup Java 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21.0.2'
-          cache: 'maven'
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
 
-      # 3) 用 Maven 打包，跳过测试，生成带依赖的可执行 JAR
-      - name: Build JAR with Maven
-        run: mvn clean package -DskipTests
+    - name: Build with Maven
+      run: mvn clean package
 
+    - name: Prepare resources for jpackage
+      run: |
+        # 创建临时资源目录
+        mkdir -p target/jpackage-resources
+        # 复制图标文件
+        cp src/main/resources/images/icons.icns target/jpackage-resources/
+        # 复制所有图像资源
+        cp -r src/main/resources/images target/jpackage-resources/
 
-      # 5) 安装 create-dmg（用于把 .app 打包成 .dmg）
-      - name: Install create-dmg
-        run: brew install create-dmg
+    - name: Create DMG package
+      run: |
+        mkdir -p release
+        jpackage \
+          --name DeskPet \
+          --type dmg \
+          --input target \
+          --main-jar DeskPet-1.0-SNAPSHOT-jar-with-dependencies.jar \
+          --main-class com.hhhu.DesktopPet \
+          --icon target/jpackage-resources/icons.icns \
+          --resource-dir target/jpackage-resources \
+          --dest release \
+          --verbose
 
-      # 6) 使用 jpackage 生成 macOS .app
-      #    注意：这里假设你的可执行 Jar 在 target/ 目录，名为 DeskPet-1.0-SNAPSHOT-jar-with-dependencies.jar
-      - name: Create macOS .app with jpackage
-        run: |
-          jpackage \
-            --name DeskPet \
-            --app-version 1.0 \
-            --input target \
-            --main-jar DeskPet-1.0-SNAPSHOT-jar-with-dependencies.jar \
-            --type app-image \
-            --icon src/main/resources/images/icnsM.icns\
-            --dest output
-
-      # 7) 用 create-dmg 将生成的 .app 打包成 .dmg
-      - name: Create DMG from .app
-        working-directory: output
-        run: |
-          create-dmg \
-            --volname "DeskPet" \
-            --window-pos 200 120 \
-            --window-size 600 400 \
-            --icon-size 100 \
-            --app-drop-link 460 185 \
-            DeskPet.dmg \
-            DeskPet.app
-
-      # 8) 上传 .dmg 作为 artifact，便于下载
-      - name: Upload DMG artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: DeskPet-macos-dmg
-          path: output/DeskPet.dmg
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: DeskPet-MacOS
+        path: release/*.dmg

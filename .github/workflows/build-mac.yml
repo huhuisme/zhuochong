@@ -16,31 +16,7 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         
-    - name: Generate ICNS icon
-      run: |
-        mkdir -p target
-        mkdir -p icon.iconset
-        
-        cp src/main/resources/images/icon.png .
     
-        # 生成不同尺寸的图标
-        sips -z 16 16 icon.png --out icon.iconset/icon_16x16.png
-        sips -z 32 32 icon.png --out icon.iconset/icon_16x16@2x.png
-        sips -z 32 32 icon.png --out icon.iconset/icon_32x32.png
-        sips -z 64 64 icon.png --out icon.iconset/icon_32x32@2x.png
-        sips -z 128 128 icon.png --out icon.iconset/icon_128x128.png
-        sips -z 256 256 icon.png --out icon.iconset/icon_128x128@2x.png
-        sips -z 256 256 icon.png --out icon.iconset/icon_256x256.png
-        sips -z 512 512 icon.png --out icon.iconset/icon_256x256@2x.png
-        sips -z 512 512 icon.png --out icon.iconset/icon_512x512.png
-        sips -z 1024 1024 icon.png --out icon.iconset/icon_512x512@2x.png
-        
-        # 转换为 .icns 格式
-        iconutil -c icns icon.iconset -o target/deskpet.icns
-        
-        # 清理临时文件
-        rm -rf icon.iconset
-        
     - name: Build with Maven
       run: |
         mvn clean package
@@ -63,7 +39,7 @@ jobs:
           --main-jar DeskPet-*.jar \
           --main-class com.hhhu.DesktopPet \
           --runtime-image target/runtime \
-          --icon target/deskpet.icns \
+          --icon src/main/resources/images/icnsM.icns \
           --type dmg \
           --dest release \
           --app-version "1.0.0" \

@@ -23,27 +23,18 @@ jobs:
     - name: Build with Maven
       run: mvn clean package
 
-    - name: Prepare resources for jpackage
-      run: |
-        # 创建临时资源目录
-        mkdir -p target/jpackage-resources
-        # 复制图标文件
-        cp src/main/resources/images/icons.icns target/jpackage-resources/
-        # 复制所有图像资源
-        cp -r src/main/resources/images target/jpackage-resources/
 
     - name: Create DMG package
       run: |
         mkdir -p release
         jpackage \
-          --name DeskPet \
-          --type dmg \
-          --input target \
-          --main-jar DeskPet-1.0-SNAPSHOT-jar-with-dependencies.jar \
-          --main-class com.hhhu.DesktopPet \
-          --icon target/jpackage-resources/icons.icns \
-          --resource-dir target/jpackage-resources \
-          --dest release \
+            --name DeskPet \
+            --type dmg \
+            --input target \
+            --main-jar DeskPet-1.0-SNAPSHOT-jar-with-dependencies.jar \
+            --main-class com.hhhu.DesktopPet \
+            --icon src/main/resources/icons.icns \  # 确保图标路径存在
+            --dest release \
           --verbose
 
     - name: Upload Artifact

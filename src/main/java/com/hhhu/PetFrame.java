@@ -248,17 +248,6 @@ public class PetFrame extends JFrame {
 
         //绘制当前帧
         BufferedImage currentImage = null;
-//        if (Happy && isHappy && !happyFrames.isEmpty()) {
-//            currentImage = happyFrames.get(currentFrame % happyFrames.size());
-//        }else if(Happy && !isHappy && !idleFrames.isEmpty()){
-//            currentImage = sleepFrames.get(currentFrame % sleepFrames.size());
-//        }else if(!Happy && isWalk && !walkRightFrames.isEmpty()){
-//            currentImage = walkRightFrames.get(currentFrame % walkRightFrames.size());
-//        }else if(!Happy && !isWalk && !walkLeftFrames.isEmpty()){
-//            currentImage = walkLeftFrames.get(currentFrame % walkLeftFrames.size());
-//        }else{
-//            currentImage = idleFrames.get(currentFrame % idleFrames.size());
-//        }
 
         switch (currentState) {
             case IDLE:

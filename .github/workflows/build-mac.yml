@@ -1,63 +1,66 @@
-name: Build macOS DMG
+name: Build macOS DMG (Java 21)
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-dmg:
     runs-on: macos-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        
-    
-    - name: Build with Maven
-      run: |
-        mvn clean package
-        
-        
-    - name: Create custom JRE
-      run: |
-        # 分析依赖模块
-        modules=$(jdeps --ignore-missing-deps --print-module-deps -q target/DeskPet-1.0-SNAPSHOT.jar)
-        
-        # 创建精简JRE
-        jlink --add-modules $modules,java.desktop \
-              --strip-debug \
-              --no-header-files \
-              --no-man-pages \
-              --compress=2 \
-              --output target/custom-jre
-              
-     - name: Package DMG
-      run: |
-        jpackage \
-          --name DeskPet \
-          --input target \
-          --main-jar DeskPet-*.jar \
-          --main-class com.hhhu.DesktopPet \
-          --runtime-image target/runtime \
-          --icon src/main/resources/images/icnsM.icns \
-          --type dmg \
-          --dest release \
-          --app-version "1.0.0" \
-          --mac-package-identifier "com.hhhu.DeskPet" \
-          --mac-sign \
-          --mac-signing-key-user-name "Developer ID"
 
-                 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: DeskPet-Mac
-        path: release/DeskPet-*.dmg
+    steps:
+      # 1) 签出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2) 安装 Temurin 21 JDK（含 jpackage 工具）
+      - name: Setup Java 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '21.0.2'
+          cache: 'maven'
+
+      # 3) 用 Maven 打包，跳过测试，生成带依赖的可执行 JAR
+      - name: Build JAR with Maven
+        run: mvn clean package -DskipTests
+
+
+      # 5) 安装 create-dmg（用于把 .app 打包成 .dmg）
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      # 6) 使用 jpackage 生成 macOS .app
+      #    注意：这里假设你的可执行 Jar 在 target/ 目录，名为 DeskPet-1.0-SNAPSHOT-jar-with-dependencies.jar
+      - name: Create macOS .app with jpackage
+        run: |
+          jpackage \
+            --name DeskPet \
+            --app-version 1.0 \
+            --input target \
+            --main-jar DeskPet-1.0-SNAPSHOT-jar-with-dependencies.jar \
+            --type app-image \
+            --icon src/main/resources/images/icnsM.icns\
+            --dest output
+
+      # 7) 用 create-dmg 将生成的 .app 打包成 .dmg
+      - name: Create DMG from .app
+        working-directory: output
+        run: |
+          create-dmg \
+            --volname "DeskPet" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --app-drop-link 460 185 \
+            DeskPet.dmg \
+            DeskPet.app
+
+      # 8) 上传 .dmg 作为 artifact，便于下载
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: DeskPet-macos-dmg
+          path: output/DeskPet.dmg

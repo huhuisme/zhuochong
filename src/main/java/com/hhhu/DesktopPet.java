@@ -4,6 +4,10 @@ import javax.swing.*;
 
 public class DesktopPet {
     public static void main(String[] args) {
+        if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+            System.setProperty("java.awt.im.style", "none");
+            System.setProperty("apple.awt.graphics.UseQuartz", "true");
+        }
         SwingUtilities.invokeLater(() -> {
             PetFrame pet = new PetFrame();
             pet.setVisible(true);
